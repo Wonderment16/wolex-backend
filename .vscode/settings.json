@@ -1,0 +1,10 @@
+{
+    "python.defaultInterpreterPath": "C:\\Users\\DELL\\Wolex\\venv\\Scripts\\python.exe",
+    "python-envs.pythonProjects": [
+        {
+            "path": "transactions",
+            "envManager": "ms-python.python:venv",
+            "packageManager": "ms-python.python:pip"
+        }
+    ]
+}

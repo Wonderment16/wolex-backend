@@ -1,0 +1,1 @@
+web: gunicorn wolex_backend.wsgi:application
