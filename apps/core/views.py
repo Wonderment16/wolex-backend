@@ -13,3 +13,4 @@ class HealthCheckView(APIView):
             "status": "ok",
             "service": "wolex_backend"
         })
+    

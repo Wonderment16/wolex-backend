@@ -20,6 +20,7 @@ from apps.core.views import home
 from apps.users.views import profile_home
 from django.conf import settings
 from django.conf.urls.static import static
+from apps.core.views import HealthCheckView
 
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -38,6 +39,8 @@ urlpatterns = [
     path('api/statements/', include('apps.statements.urls')),
     path('api/users/', include('apps.users.api.urls')),
     path('api/chatbot/', include('apps.chatbot.urls')),
+    path("healthz/", HealthCheckView.as_view()),
+
 ]
 
 urlpatterns += static(
