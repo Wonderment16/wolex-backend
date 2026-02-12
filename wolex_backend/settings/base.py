@@ -19,9 +19,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-jbf!nok0z&67+)h+7!dkyzk2dj=@v7kj@5ff62pb%gsu%s*0j0'
-
 # SECURITY WARNING: don't run with debug turned on in production!
 
 from decouple import config
@@ -30,7 +27,7 @@ SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -104,17 +101,19 @@ WSGI_APPLICATION = 'wolex_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+import dj_database_url
+from decouple import config
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'wolex_db',
-        'USER': 'postgres',
-        'PASSWORD': 'Wondermentdb#2009',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-        "conn_max_age" : 600,
-    }
+    "default": dj_database_url.config(
+        default=config(
+            "DATABASE_URL",
+            default="postgres://postgres:Wondermentdb#2009@127.0.0.1:5432/wolex_db"
+        ),
+        conn_max_age=600,
+    )
 }
+
 
 
 # Password validation
@@ -157,48 +156,23 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES':  (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        )
-}
-
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
     ],
-}
-
-REST_FRAMEWORK.update({
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.UserRateThrottle',
-        'rest_framework.throttling.AnonRateThrottle',
-    ],
-    'DEFAULT_THROTTLE_RATES': {
-        'user': '1000/day',
-        'anon': '100/day',
-    }
-})
-
-REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'].update({
-    'chatbot': '300/hour',
-})
-
-REST_FRAMEWORK.update({
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-})
-
-REST_FRAMEWORKK = {
-    "EXCEPTION_HANDLER": "apps.core.exceptions.custom_exception_handler"
-}
-
-REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.UserRateThrottle",
+        "rest_framework.throttling.AnonRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
         "user": "1000/day",
+        "anon": "100/day",
         "chatbot": "30/min",
     },
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "apps.core.exceptions.custom_exception_handler",
 }
 
 
@@ -237,7 +211,7 @@ CACHES = {
 
 LOGGING = {
     "version": 1,
-    "disable_existing_logges": False,
+    "disable_existing_loggers": False,
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
