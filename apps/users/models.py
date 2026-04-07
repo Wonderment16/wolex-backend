@@ -36,19 +36,27 @@ class User(AbstractUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    email_verified = models.BooleanField(default=False)
     
     objects = UserManager()
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
+
     def __str__(self):
         return self.email
 
+    @property
+    def profile_completed(self):
+        try:
+            return bool(self.profile.is_complete)
+        except Exception:
+            return False
 
     @property
     def calculated_balance(self):
-        earned = self.transactions.filter(transaction_type='EARNED').aggregate(models.Sum('amount'))['amount__sum'] or 0
-        purchased = self.transactions.filter(transaction_type='PURCHASED').aggregate(models.Sum('amount'))['amount__sum'] or 0
+        earned = self.transactions.filter(transaction_type="INCOME").aggregate(models.Sum('amount'))['amount__sum'] or 0
+        purchased = self.transactions.filter(transaction_type="EXPENSE").aggregate(models.Sum('amount'))['amount__sum'] or 0
         return earned - purchased
 
     role = models.CharField(
@@ -68,4 +76,24 @@ class Balance(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.amount}"
+
+
+class BillingAccount(models.Model):
+    ACCOUNT_TYPES = (
+        ("INDIVIDUAL", "Individual"),
+        ("FAMILY", "Family"),
+        ("BUSINESS", "Business"),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="billing_accounts")
+    account_name = models.CharField(max_length=120)
+    account_number = models.CharField(max_length=20)
+    bank_name = models.CharField(max_length=120)
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES, default="INDIVIDUAL")
+    amount_ngn = models.PositiveIntegerField()
+    verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.bank_name} ({self.account_type})"
     

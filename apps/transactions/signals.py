@@ -6,10 +6,10 @@ from apps.alerts.models import Alert
 @receiver(post_save, sender=Transaction)
 def create_transaction_alert(sender, instance, created, **kwargs):
     if created:
-            Alert.objects.create(
-    user=instance.user,
-    message=f"{instance.amount} added as {instance.transaction_type.lower()}"
-)
+        Alert.objects.create(
+            user=instance.user,
+            message=f"{instance.amount} added as {instance.transaction_type.lower()}",
+        )
 
             
 
@@ -22,9 +22,9 @@ def update_user_balance(sender, instance, created, **kwargs):
 
     balance, _ = Balance.objects.get_or_create(user=instance.user)
 
-    if instance.transaction_type == 'EARNED':
+    if instance.transaction_type == "INCOME":
         balance.amount += instance.amount
-    elif instance.transaction_type == 'PURCHASED':
+    elif instance.transaction_type == "EXPENSE":
         balance.amount -= instance.amount
 
     balance.save()     

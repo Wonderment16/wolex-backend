@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 
+from django import http
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,7 +29,32 @@ SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*']  # lock down in production
+
+# CORS configuration – frontends should specify origins via environment.  when hard‑
+# coded they must be a list/tuple of strings.
+# settings.py
+
+# Keep your existing CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+]
+
+# ADD THIS: CSRF needs its own list of trusted origins
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+]
+CORS_ALLOW_CREDENTIALS = True
+# external services / env keys
+GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID', default='')
+FRONTEND_URL = config('FRONTEND_URL', default='http://127.0.0.1:5500')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@wolex.com')
 
 
 # Application definition
@@ -39,6 +66,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
     'drf_spectacular',
     'apps.users',
@@ -49,6 +77,9 @@ INSTALLED_APPS = [
     'apps.statements',
     'apps.chatbot',
     'apps.activity',
+    'apps.category',
+    'apps.workspaces',
+    'apps.sync'
 
 ]
 
@@ -70,6 +101,7 @@ else:
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -108,7 +140,8 @@ DATABASES = {
     "default": dj_database_url.config(
         default=config(
             "DATABASE_URL",
-            default="postgres://postgres:Wondermentdb#2009@127.0.0.1:5432/wolex_db"
+            # '#' must be percent-encoded in URLs
+            default="postgres://postgres:Wondermentdb%232009@127.0.0.1:5432/wolex_db"
         ),
         conn_max_age=600,
     )
@@ -131,8 +164,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+    },    {
+        'NAME': 'apps.users.validators.SymbolNumberPasswordValidator',
+    },]
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -153,15 +187,15 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        # "rest_framework.authentication.SessionAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": [
+    "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
-    ],
+    ),
+    
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.UserRateThrottle",
         "rest_framework.throttling.AnonRateThrottle",
@@ -170,9 +204,28 @@ REST_FRAMEWORK = {
         "user": "1000/day",
         "anon": "100/day",
         "chatbot": "30/min",
+        "auth": "20/hour",
+        "password_reset": "10/hour",
+        "email_verification": "10/hour",
+        "google_auth": "20/hour",
     },
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "EXCEPTION_HANDLER": "apps.core.exceptions.custom_exception_handler",
+    # "EXCEPTION_HANDLER": "apps.core.exceptions.custom_exception_handler",
+
+}
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    # Set the Access Token to last 24 hours
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=24),
+    # Set the Refresh Token to last 7 days
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 
@@ -197,18 +250,13 @@ Q_CLUSTER = {
     "bulk": 10,
     "orm": "default",
 }
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-
-
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     }
 }
-
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -222,3 +270,9 @@ LOGGING = {
         "level" : "INFO"
     },
 }
+
+
+
+
+# This redirects all emails to your terminal instead of a real server
+LOGIN_REDIRECT_URL = '/pages/dashboard.html'

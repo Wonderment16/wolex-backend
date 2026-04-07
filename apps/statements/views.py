@@ -17,7 +17,8 @@ class StatementUploadView(APIView):
 
     def post(self, request):
         serializer = StatementUploadSerializer(
-            data=request.data
+            data=request.data,
+            context={"request": request},
             )
 
         def run_async(statement_id):

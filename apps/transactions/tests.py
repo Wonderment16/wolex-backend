@@ -13,11 +13,11 @@ class TransactionTestCase(TestCase):
     def test_create_earned_transaction(self):
         transaction = create_transaction(
             user=self.user,
-            transaction_type='EARNED',
+            transaction_type='INCOME',
             amount=100.00,
             description='Test Earned Transaction'
         )
-        self.assertEqual(transaction.transaction_type, 'EARNED')
+        self.assertEqual(transaction.transaction_type, 'INCOME')
         self.assertEqual(transaction.amount, 100.00)
         self.balance.refresh_from_db()
         self.assertEqual(self.balance.amount, 100.00)
@@ -26,17 +26,17 @@ class TransactionTestCase(TestCase):
         # First, create an earned transaction to have some balance
         create_transaction(
             user=self.user,
-            transaction_type='EARNED',
+            transaction_type='INCOME',
             amount=150.00,
             description='Initial Earned Transaction'
         )
         transaction = create_transaction(
             user=self.user,
-            transaction_type='PURCHASED',
+            transaction_type='EXPENSE',
             amount=50.00,
             description='Test Purchased Transaction'
         )
-        self.assertEqual(transaction.transaction_type, 'PURCHASED')
+        self.assertEqual(transaction.transaction_type, 'EXPENSE')
         self.assertEqual(transaction.amount, 50.00)
         self.balance.refresh_from_db()
         self.assertEqual(self.balance.amount, 100.00)  # 150 - 50 = 100

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wolex Pricing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f6f1e7;
+            --ink: #1f1d1a;
+            --muted: #6a645c;
+            --card: #ffffff;
+            --accent: #ea5a2a;
+            --accent-dark: #c9471f;
+            --line: #e6ddd1;
+            --shadow: 0 24px 60px rgba(31, 29, 26, 0.12);
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            color: var(--ink);
+            background: radial-gradient(1200px 600px at 10% 0%, #fbe9d6 0%, transparent 60%),
+                        radial-gradient(1000px 800px at 90% 10%, #f3d7c8 0%, transparent 55%),
+                        var(--bg);
+        }
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 48px 24px 80px;
+        }
+        .hero {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 32px;
+            align-items: center;
+            margin-bottom: 36px;
+        }
+        .hero h1 {
+            font-size: clamp(2rem, 3.2vw, 3.4rem);
+            margin: 0 0 12px;
+            letter-spacing: -0.02em;
+        }
+        .hero p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+        .price-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+        .price-card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 18px 18px 16px;
+            box-shadow: var(--shadow);
+        }
+        .price-card h3 {
+            margin: 0 0 8px;
+            font-size: 1rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .price-card .amount {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        .price-card .amount span {
+            font-size: 0.9rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+        .form-card {
+            margin-top: 28px;
+            background: var(--card);
+            border-radius: 18px;
+            padding: 26px;
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
+        }
+        .form-card h2 {
+            margin: 0 0 6px;
+            font-size: 1.4rem;
+        }
+        .form-card p {
+            margin: 0 0 20px;
+            color: var(--muted);
+        }
+        form {
+            display: grid;
+            gap: 14px;
+        }
+        .grid-2 {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+        label {
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+        input, select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            font-family: inherit;
+            font-size: 1rem;
+            background: #fffdf9;
+        }
+        .action-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .price-pill {
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: #fff0e6;
+            color: var(--accent-dark);
+            font-weight: 600;
+        }
+        button {
+            border: none;
+            background: var(--accent);
+            color: white;
+            padding: 12px 18px;
+            font-size: 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(234, 90, 42, 0.25);
+        }
+        .notice {
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: #e9f7ef;
+            color: #215c39;
+            border: 1px solid #c5ead5;
+            font-weight: 500;
+        }
+        .errors {
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: #fff1f1;
+            color: #8f1e1e;
+            border: 1px solid #f1c3c3;
+        }
+        .errors div {
+            margin-bottom: 6px;
+        }
+        .errors div:last-child {
+            margin-bottom: 0;
+        }
+        @media (max-width: 900px) {
+            .hero {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <section class="hero">
+            <div>
+                <h1>Upgrade your account</h1>
+                <p>Pick a paid plan and add the account you want Wolex to debit. This keeps your subscription active without manual renewals.</p>
+            </div>
+            <div class="price-grid">
+                {% for plan in account_types %}
+                <div class="price-card">
+                    <h3>{{ plan.label }}</h3>
+                    <div class="amount">₦{{ plan.price }} <span>/ paid account</span></div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="form-card">
+            <h2>Billing account details</h2>
+            <p>We’ll only use these details for plan billing. You can update them later.</p>
+
+            {% if success %}
+                <div class="notice">Account details saved. Your plan price is ₦{{ billing.amount_ngn }}.</div>
+            {% endif %}
+
+            {% if errors %}
+                <div class="errors">
+                    {% for field, msgs in errors.items %}
+                        <div><strong>{{ field }}:</strong> {{ msgs }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="grid-2">
+                    <div>
+                        <label for="account_name">Account name</label>
+                        <input id="account_name" name="account_name" value="{{ data.account_name|default:'' }}" placeholder="e.g. Ada Obi">
+                    </div>
+                    <div>
+                        <label for="bank_name">Bank name</label>
+                        <input id="bank_name" name="bank_name" value="{{ data.bank_name|default:'' }}" placeholder="e.g. Zenith Bank">
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div>
+                        <label for="account_number">Account number</label>
+                        <input id="account_number" name="account_number" value="{{ data.account_number|default:'' }}" placeholder="10-digit number">
+                    </div>
+                    <div>
+                        <label for="account_type">Plan type</label>
+                        <select id="account_type" name="account_type">
+                            {% for plan in account_types %}
+                                <option value="{{ plan.code }}" data-price="{{ plan.price }}"
+                                    {% if data.account_type == plan.code %}selected{% endif %}>
+                                    {{ plan.label }} — ₦{{ plan.price }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="action-row">
+                    <button type="submit">Save billing details</button>
+                    <div class="price-pill" id="selectedPrice">₦{{ account_types.0.price }}</div>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <script>
+        (function() {
+            var select = document.getElementById("account_type");
+            var priceEl = document.getElementById("selectedPrice");
+            if (!select || !priceEl) return;
+            var update = function() {
+                var option = select.options[select.selectedIndex];
+                var price = option ? option.getAttribute("data-price") : "";
+                priceEl.textContent = "₦" + price;
+            };
+            select.addEventListener("change", update);
+            update();
+        })();
+    </script>
+</body>
+</html>

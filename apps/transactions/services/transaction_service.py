@@ -1,50 +1,41 @@
 from decimal import Decimal
-from apps.transactions.models import Transaction
-from django.db import transaction
 import csv
 from io import StringIO
-from django.db.models import Sum
-from django.db.models.functions import TruncMonth
 from collections import defaultdict
-from datetime import datetime, timedelta
 
 from django.db import transaction as db_transaction
+from django.db.models import Sum
+from django.db.models.functions import TruncMonth
+
 from apps.transactions.models import Transaction
 from apps.activity.utils import log_activity
 
 
+def normalize_transaction_type(value):
+    if value is None:
+        return value
+    normalized = value.upper()
+    if normalized == "EXPENSES":
+        return "EXPENSE"
+    return normalized
+
+
 def calculate_user_balance(user):
+    income_types = ["INCOME"]
+    expense_types = ["EXPENSE"]
+
     earned = Transaction.objects.filter(
         user=user,
-        transaction_type='EARNED'
+        transaction_type__in=income_types,
     ).aggregate(total=Sum("amount"))["total"] or Decimal("0")
-    
+
     purchased = Transaction.objects.filter(
         user=user,
-        transaction_type='PURCHASED'
-        ).aggregate(total=Sum("amount"))["total"] or Decimal("0")
-    
+        transaction_type__in=expense_types,
+    ).aggregate(total=Sum("amount"))["total"] or Decimal("0")
+
     return earned - purchased
 
-
-def create_transaction(user, transaction_type, amount, description=''):
-    from apps.users.models import Balance
-
-    with transaction.atomic():
-        txn = Transaction.objects.create(
-            user=user,
-            transaction_type=transaction_type,
-            amount=amount,
-            description=description
-        )
-
-        balance = user.balance
-        if transaction_type == 'EARNED':
-            balance.amount += amount
-        elif transaction_type == 'PURCHASED':
-            balance.amount -= amount
-        balance.save()
-    return txn
 
 def export_transactions_csv(user):
     transactions = Transaction.objects.filter(user=user).order_by("-created_at")
@@ -68,18 +59,23 @@ def export_transactions_csv(user):
 
 
 def dashboard_data(user):
+    income_types = ["INCOME"]
+    expense_types = ["EXPENSE"]
+
     transactions = Transaction.objects.filter(user=user)
 
-    total_credit = transactions.filter(transaction_type='EARNED').aggregate(Sum('amount'))['amount__sum'] or 0
-    total_debit = transactions.filter(transaction_type='PURCHASED').aggregate(Sum('amount'))['amount__sum'] or 0
+    total_credit = transactions.filter(transaction_type__in=income_types).aggregate(Sum('amount'))['amount__sum'] or 0
+    total_debit = transactions.filter(transaction_type__in=expense_types).aggregate(Sum('amount'))['amount__sum'] or 0
 
     # Monthly trend
     monthly = transactions.annotate(month=TruncMonth('created_at')).values('month', 'transaction_type').annotate(total=Sum('amount'))
 
-    trend = defaultdict(lambda: {'EARNED': 0, 'PURCHASED': 0})
+    trend = defaultdict(lambda: {'INCOME': 0, 'EXPENSE': 0})
     for item in monthly:
         month_str = item['month'].strftime('%Y-%m')
-        trend[month_str][item['transaction_type']] = item['total']
+        normalized = normalize_transaction_type(item['transaction_type'])
+        if normalized in trend[month_str]:
+            trend[month_str][normalized] = item['total']
 
     last_transactions = transactions.order_by('-created_at')[:5]
 
@@ -103,12 +99,14 @@ def predict_next_month_flow(user):
     trend = {}
     for item in monthly:
         month_str = item["month"].strftime("%Y-%m")
-        trend.setdefault(month_str, {'EARNED': 0, 'PURCHASED': 0})
-        trend[month_str][item['transaction_type']] = item['total']
+        trend.setdefault(month_str, {'INCOME': 0, 'EXPENSE': 0})
+        normalized = normalize_transaction_type(item['transaction_type'])
+        if normalized in trend[month_str]:
+            trend[month_str][normalized] = item['total']
 
     last_3_months = sorted(trend.keys())[-3:]
-    earned_avg = sum(trend[m]['EARNED'] for m in last_3_months) / 3 if last_3_months else 0
-    purchased_avg = sum(trend[m]['PURCHASED'] for m in last_3_months) / 3 if last_3_months else 0
+    earned_avg = sum(trend[m]['INCOME'] for m in last_3_months) / 3 if last_3_months else 0
+    purchased_avg = sum(trend[m]['EXPENSE'] for m in last_3_months) / 3 if last_3_months else 0
 
     return {
         "predicted_earned": earned_avg,
@@ -117,22 +115,20 @@ def predict_next_month_flow(user):
     }
 
 
-
-
-
 def create_transaction(user, transaction_type, amount, description=''):
     from apps.users.models import Balance
 
     with db_transaction.atomic():
+        normalized_type = normalize_transaction_type(transaction_type)
         txn = Transaction.objects.create(
             user=user,
-            transaction_type=transaction_type,
+            transaction_type=normalized_type,
             amount=amount,
             description=description
         )
 
         balance = user.balance
-        if transaction_type == 'EARNED':
+        if normalized_type == 'INCOME':
             balance.amount += amount
         else:
             balance.amount -= amount
@@ -142,7 +138,7 @@ def create_transaction(user, transaction_type, amount, description=''):
         log_activity(
             user=user,
             activity_type='TRANSACTION',
-            message=f"{transaction_type} of {amount}",
+            message=f"{normalized_type} of {amount}",
             metadata={
                 "transaction_id": txn.id,
                 "amount": str(amount)

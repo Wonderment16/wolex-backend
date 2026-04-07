@@ -4,7 +4,10 @@ from rest_framework.permissions import AllowAny
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.permissions import IsAuthenticated
 from .serializers import ChatbotMessageSerializer
+from django.shortcuts import render
 
+def index(request):
+    render(request, "index.html")
 
 class ChatbotEndpoint(APIView):
     permission_classes = [AllowAny]

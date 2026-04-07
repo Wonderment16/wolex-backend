@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Profile | Wolex</title>
+    <link rel="stylesheet" href="../styles/auth.css">
+  </head>
+  <body>
+    <main class="auth-page">
+      <section class="auth-left">
+        <div class="brand">
+          <img
+            src="../assets/logo_dark.jpeg"
+            alt="Wolex Logo"
+            class="logo-icon"
+          >
+          <h1>Complete your profile</h1>
+          <p>Help us personalize your Wolex experience.</p>
+        </div>
+
+        <div class="auth-highlights">
+          <span>Secure</span>
+          <span>Personalized</span>
+          <span>Smart Setup</span>
+        </div>
+      </section>
+
+      <section class="auth-right">
+        <div class="auth-card">
+          <h2>Set up your profile</h2>
+          <p>Add a few details to get started with Wolex.</p>
+
+          <form class="auth-form" id="profile-form">
+            <label for="dob">Date of Birth</label>
+            <input type="date" id="dob" name="dob" required>
+
+            <label for="job">Job / Occupation</label>
+            <input
+              type="text"
+              id="job"
+              name="job"
+              placeholder="Enter your job or occupation"
+              autocomplete="organization-title"
+            >
+
+            <label for="photo">Profile Photo</label>
+
+            <div class="file-upload">
+              <input type="file" id="photo" name="photo" accept="image/*">
+              <label for="photo" class="file-btn"> Upload Photo </label>
+              <span class="file-name">No file chosen</span>
+            </div>
+            <p id="profile-error"></p>
+            <p class="set-up-hint">This takes less than 30 seconds</p>
+            <button type="submit" class="btn btn-primary">Finish Setup</button>
+
+            <a href="dashboard.html" class="btn btn-secondary skip-btn">
+              Skip for now
+            </a>
+          </form>
+        </div>
+      </section>
+    </main>
+    <script src="../scripts/profile.js"></script>
+  </body>
+</html>
