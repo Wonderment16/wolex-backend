@@ -59,7 +59,10 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 # external services / env keys
 GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID', default='')
-FRONTEND_URL = config('FRONTEND_URL', default=' "https://wolex-frontend.vercel.app",')
+FRONTEND_URL = config(
+    'FRONTEND_URL',
+    default='https://wolex-frontend.vercel.app'
+)
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@wolex.com')
 
 
