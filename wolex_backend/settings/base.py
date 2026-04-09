@@ -44,6 +44,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5500",
     "http://127.0.0.1:5173",
     "http://localhost:5173",
+    "https://wolex-frontend.vercel.app",
 ]
 
 # ADD THIS: CSRF needs its own list of trusted origins
@@ -52,11 +53,13 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5500",
     "http://127.0.0.1:5173",
     "http://localhost:5173",
+    "https://wolex-frontend.vercel.app",
+
 ]
 CORS_ALLOW_CREDENTIALS = True
 # external services / env keys
 GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID', default='')
-FRONTEND_URL = config('FRONTEND_URL', default='http://127.0.0.1:5500')
+FRONTEND_URL = config('FRONTEND_URL', default=' "https://wolex-frontend.vercel.app",')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@wolex.com')
 
 
