@@ -32,7 +32,7 @@ SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = ['wolex-backend.onrender.com']  # lock down in production
+ALLOWED_HOSTS = ['wolex.onrender.com']  # lock down in production
 
 # CORS configuration – frontends should specify origins via environment.  when hard‑
 # coded they must be a list/tuple of strings.
@@ -165,6 +165,7 @@ DATABASES = {
             default="postgresql://wolex_db_mqup_user:IyGRMEsbmZzbe3wM31MG1TOp862nAiLp@dpg-d98h9betrd3s73em4li0-a.oregon-postgres.render.com/wolex_db_mqup"
         ),
         conn_max_age=600,
+        ssl_require_True
     )
 }
 
